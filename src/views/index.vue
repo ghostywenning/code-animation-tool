@@ -1,0 +1,106 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import CodeEditor from '../components/CodeEditor.vue'
+import CodeEditorTabs from '../components/CodeEditorTabs.vue'
+import ExportSettings from '../components/ExportSettings.vue'
+
+interface Tab {
+  name: string
+  content: string
+}
+
+const activeTab = ref('0')
+const tabs = ref<Tab[]>([
+  { name: 'code.ts', content: '' }
+])
+
+const typingSpeed = ref(100)
+const editorRef = ref<InstanceType<typeof CodeEditor> | null>(null)
+const isRecording = ref(false)
+const exportSettingsRef = ref<InstanceType<typeof ExportSettings> | null>(null)
+
+function handleRecordingChange(value: boolean) {
+  isRecording.value = value
+}
+
+function handleClearEditor() {
+  editorRef.value?.clearEditor()
+}
+
+function handleStartTyping(code: string) {
+  editorRef.value?.playTyping(code)
+}
+
+function handleTypingComplete() {
+  if (isRecording.value) {
+    exportSettingsRef.value?.$emit('typing-complete')
+  }
+}
+</script>
+
+<template>
+  <div class="main-container">
+    <div class="editor-section">
+      <CodeEditor
+        ref="editorRef"
+        v-model="tabs[Number(activeTab)].content"
+        v-model:filename="tabs[Number(activeTab)].name"
+        :speed="typingSpeed"
+        :is-recording="isRecording"
+        @typing-complete="handleTypingComplete"
+      >
+        <template #tabs="{ isRecording }">
+          <CodeEditorTabs
+            v-model:tabs="tabs"
+            v-model:activeTab="activeTab"
+            :is-recording="isRecording"
+          />
+        </template>
+      </CodeEditor>
+    </div>
+    <ExportSettings
+      class="settings-panel"
+      ref="exportSettingsRef"
+      v-model:speed="typingSpeed"
+      :recording-area="editorRef?.recordingArea"
+      :current-code="tabs[Number(activeTab)].content"
+      @update:recording="handleRecordingChange"
+      @clear-editor="handleClearEditor"
+      @start-typing="handleStartTyping"
+    />
+  </div>
+</template>
+
+<style scoped>
+.main-container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.editor-section {
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+}
+
+/* Медиа-запросы для адаптивности */
+@media (max-width: 768px) {
+  .main-container {
+    flex-direction: column;
+  }
+
+  .editor-section {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .settings-panel {
+    width: 100% !important;
+    height: auto;
+    max-height: 200px;
+  }
+}
+</style> 
