@@ -89,10 +89,10 @@ function getButtonText() {
 }
 
 async function handleTypingComplete() {
+  console.log('Export settings handle typing complete', isRecording.value)
   if (isRecording.value) {
-    // Добавляем задержку в 1 секунду перед остановкой записи
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    stopRecording();
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    stopRecording()
   }
 }
 

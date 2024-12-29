@@ -33,7 +33,7 @@ function handleStartTyping(code: string) {
 
 function handleTypingComplete() {
   if (isRecording.value) {
-    exportSettingsRef.value?.$emit('typing-complete')
+    exportSettingsRef.value?.handleTypingComplete()
   }
 }
 </script>

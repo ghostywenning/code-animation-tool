@@ -114,10 +114,6 @@ async function playTyping(targetCode: string) {
   emit('typing-complete')
 }
 
-function stopTyping() {
-  isPlaying.value = false
-}
-
 // Экспортируем дополнительные методы
 defineExpose({
   playTyping,
