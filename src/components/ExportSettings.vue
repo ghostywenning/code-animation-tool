@@ -5,13 +5,26 @@ import { isMobileDevice } from '../utils/device'
 import { ElMessage } from 'element-plus'
 import 'element-plus/es/components/message/style/css'
 
+type AspectRatio = '16:9' | '9:16' | '3:4'
+
 const typingSpeed = defineModel<number>('speed')
+const selectedRatio = defineModel<AspectRatio>('ratio', { default: '16:9' })
+const startDelay = defineModel<number>('startDelay', { default: 2000 })
+const endDelay = defineModel<number>('endDelay', { default: 2000 })
 const isRecording = ref(false)
 const recorder = new ScreenRecorder()
 
+interface EditorRef {
+  stopTyping: () => void
+  playTyping: (code: string) => void
+  clearEditor: () => void
+  recordingArea: HTMLElement | undefined
+}
+
 const props = defineProps<{
   recordingArea: HTMLElement | undefined,
-  currentCode: string
+  currentCode: string,
+  editorRef?: EditorRef | null
 }>()
 
 const savedCode = ref('')
@@ -40,19 +53,15 @@ async function startRecording() {
   }
 
   try {
-    // Сначала начинаем запись
     await recorder.startRecording(props.recordingArea)
     isRecording.value = true
     emit('update:recording', true)
 
-    // Сохраняем код и очищаем редактор
     savedCode.value = props.currentCode
     emit('clear-editor')
     
-    // Небольшая задержка перед началом печати
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise(resolve => setTimeout(resolve, startDelay.value))
     
-    // Начинаем печатать сохраненный код
     emit('start-typing', savedCode.value)
   } catch (err) {
     console.error('Failed to start recording:', err)
@@ -63,6 +72,10 @@ async function startRecording() {
 
 async function stopRecording() {
   if (!recorder.isRecording()) return
+  
+  props.editorRef?.stopTyping()
+  
+  await new Promise(resolve => setTimeout(resolve, 100))
   
   try {
     const blob = await recorder.stopRecording()
@@ -89,10 +102,11 @@ function getButtonText() {
 }
 
 async function handleTypingComplete() {
-  console.log('Export settings handle typing complete', isRecording.value)
   if (isRecording.value) {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    stopRecording()
+    if (recorder.isRecording()) {
+      await new Promise(resolve => setTimeout(resolve, endDelay.value))
+      stopRecording()
+    }
   }
 }
 
@@ -106,12 +120,38 @@ defineExpose({
 <template>
   <div class="settings-wrapper">
     <el-form label-position="top">
+      <el-form-item label="Соотношение сторон">
+        <el-select v-model="selectedRatio" class="settings-select">
+          <el-option label="Горизонтальное (16:9)" value="16:9" />
+          <el-option label="Вертикальное (9:16)" value="9:16" />
+          <el-option label="Вертикальное (3:4)" value="3:4" />
+        </el-select>
+      </el-form-item>
+
       <el-form-item label="Скорость печати (мс)">
         <el-input-number 
           v-model="typingSpeed"
           :min="10"
           :max="1000"
           :step="10"
+        />
+      </el-form-item>
+
+      <el-form-item label="Задержка перед началом (мс)">
+        <el-input-number 
+          v-model="startDelay"
+          :min="0"
+          :max="50000"
+          :step="100"
+        />
+      </el-form-item>
+
+      <el-form-item label="Задержка перед остановкой (мс)">
+        <el-input-number 
+          v-model="endDelay"
+          :min="0"
+          :max="50000"
+          :step="100"
         />
       </el-form-item>
 

@@ -15,7 +15,21 @@ const tabs = ref<Tab[]>([
 ])
 
 const typingSpeed = ref(100)
-const editorRef = ref<InstanceType<typeof CodeEditor> | null>(null)
+const selectedRatio = ref<'16:9' | '9:16' | '3:4'>('16:9')
+const startDelay = ref(2000)
+const endDelay = ref(2000)
+
+// Определяем тип для editorRef
+interface EditorRef {
+  stopTyping: () => void
+  playTyping: (code: string) => void
+  clearEditor: () => void
+  recordingArea: HTMLElement | undefined
+}
+
+// Обновляем тип ref
+const editorRef = ref<EditorRef | null>(null)
+
 const isRecording = ref(false)
 const exportSettingsRef = ref<InstanceType<typeof ExportSettings> | null>(null)
 
@@ -47,6 +61,7 @@ function handleTypingComplete() {
         v-model:filename="tabs[Number(activeTab)].name"
         :speed="typingSpeed"
         :is-recording="isRecording"
+        :ratio="selectedRatio"
         @typing-complete="handleTypingComplete"
       >
         <template #tabs="{ isRecording }">
@@ -62,8 +77,12 @@ function handleTypingComplete() {
       class="settings-panel"
       ref="exportSettingsRef"
       v-model:speed="typingSpeed"
+      v-model:ratio="selectedRatio"
+      v-model:startDelay="startDelay"
+      v-model:endDelay="endDelay"
       :recording-area="editorRef?.recordingArea"
       :current-code="tabs[Number(activeTab)].content"
+      :editor-ref="editorRef"
       @update:recording="handleRecordingChange"
       @clear-editor="handleClearEditor"
       @start-typing="handleStartTyping"
@@ -78,12 +97,16 @@ function handleTypingComplete() {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+  background-color: #1a1a1a;
 }
 
 .editor-section {
   flex: 1;
   height: 100%;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Медиа-запросы для адаптивности */

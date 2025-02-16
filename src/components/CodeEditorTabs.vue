@@ -265,6 +265,8 @@ const vFocus = {
 
 .filename-text {
   user-select: none;
+  font-family: monospace;
+  font-weight: 600;
 }
 
 .recording .tab {

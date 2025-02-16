@@ -9,10 +9,12 @@ const filename = defineModel<string>('filename', { default: '' })
 const props = defineProps<{
   speed: number
   isRecording?: boolean
+  ratio?: '16:9' | '9:16' | '3:4'
 }>()
 const editorContainer = ref<HTMLElement>()
 let editor: monaco.editor.IStandaloneCodeEditor | null = null
 const isPlaying = ref(false)
+const shouldStop = ref(false)
 const recordingArea = ref<HTMLElement>()
 
 // Добавим emit для событий печати
@@ -100,13 +102,21 @@ async function playTyping(targetCode: string) {
   if (!editor || isPlaying.value) return
   
   isPlaying.value = true
+  shouldStop.value = false
   emit('typing-start')
   editor.setValue('')
   
   for (let i = 0; i < targetCode.length; i++) {
-    if (!isPlaying.value) break
+    if (shouldStop.value || !isPlaying.value) break
     
     editor.setValue(targetCode.slice(0, i + 1))
+    
+    const position = editor.getModel()?.getPositionAt(i + 1)
+    if (position) {
+      editor.setPosition(position)
+      editor.revealPositionInCenter(position)
+    }
+    
     await new Promise(resolve => setTimeout(resolve, props.speed))
   }
   
@@ -114,11 +124,17 @@ async function playTyping(targetCode: string) {
   emit('typing-complete')
 }
 
-// Экспортируем дополнительные методы
+function stopTyping() {
+  shouldStop.value = true
+  isPlaying.value = false
+}
+
+// Экспортируем метод stopTyping
 defineExpose({
   playTyping,
   recordingArea,
-  clearEditor: () => editor?.setValue('')
+  clearEditor: () => editor?.setValue(''),
+  stopTyping
 })
 </script>
 
@@ -126,7 +142,13 @@ defineExpose({
   <div 
     ref="recordingArea"
     class="editor-wrapper"
-    :class="{ recording: props.isRecording }"
+    :class="{ 
+      recording: props.isRecording,
+      'ratio-16-9': props.isRecording && props.ratio === '16:9',
+      'ratio-9-16': props.isRecording && props.ratio === '9:16',
+      'ratio-3-4': props.isRecording && props.ratio === '3:4',
+      'default-size': !props.isRecording
+    }"
   >
     <div 
       v-if="props.isRecording" 
@@ -155,13 +177,47 @@ defineExpose({
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 100%;
   background-color: #1e1e1e;
-  transition: box-shadow 0.3s ease;
+  transition: all 0.3s ease;
 }
 
+/* Стиль по умолчанию (когда нет записи) */
+.editor-wrapper.default-size {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+}
+
+/* Стили для записи */
 .editor-wrapper.recording {
   box-shadow: 0 0 0 2px #ff4444;
+  max-width: 1280px;
+  max-height: 720px;
+}
+
+.editor-wrapper.ratio-16-9 {
+  width: 100%;
+  max-width: 1280px;
+  aspect-ratio: 16/9;
+  height: auto;
+}
+
+.editor-wrapper.ratio-9-16 {
+  width: auto;
+  height: 100%;
+  max-height: 720px;
+  aspect-ratio: 9/16;
+  margin: 0 auto;
+}
+
+.editor-wrapper.ratio-3-4 {
+  width: auto;
+  height: 100%;
+  max-height: 720px;
+  max-width: 540px;
+  aspect-ratio: 3/4;
+  margin: 0 auto;
 }
 
 .mac-toolbar {
@@ -220,19 +276,39 @@ defineExpose({
   cursor: not-allowed;
 }
 
-/* Медиа-запросы */
 @media (max-width: 768px) {
+  .editor-wrapper.recording {
+    max-width: 100%;
+    max-height: none;
+  }
+
+  .editor-wrapper.ratio-9-16 {
+    width: 100%;
+    max-width: 405px;
+    margin: 0 auto;
+  }
+
+  .editor-wrapper.ratio-16-9 {
+    width: 100%;
+    height: auto;
+  }
+
+  .editor-wrapper.ratio-3-4 {
+    width: 100%;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+
   .mac-toolbar {
     height: 32px;
     padding: 0 8px;
   }
 
   .window-controls {
-    display: none; /* Скрываем кнопки окна на мобильных */
+    display: none;
   }
 
   :deep(.monaco-editor) {
-    /* Уменьшаем размер шрифта на мобильных */
     font-size: 12px !important;
   }
 }
