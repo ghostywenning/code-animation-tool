@@ -62,6 +62,49 @@ onMounted(() => {
   editor.onDidChangeModelContent(() => {
     code.value = editor?.getValue() || ''
   })
+
+  // Обновляем обработчик Ctrl+S
+  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, async () => {
+    const content = editor?.getValue() || ''
+    const ext = filename.value.split('.').pop()?.toLowerCase()
+    
+    const mimeType = {
+      'js': 'text/javascript',
+      'ts': 'text/typescript',
+      'py': 'text/x-python',
+      'html': 'text/html',
+      'css': 'text/css',
+      'json': 'application/json',
+    }[ext || ''] || 'text/plain'
+    
+    if ('showSaveFilePicker' in window) {
+      try {
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: filename.value || 'code.txt',
+          types: [{
+            description: 'Code Files',
+            accept: { [mimeType]: ['.' + (ext || 'txt')] },
+          }],
+        })
+        const writable = await handle.createWritable();
+        await writable.write(content);
+        await writable.close();
+      } catch (err) {
+        console.log('Save cancelled')
+      }
+    } else {
+      const blob = new Blob([content], { type: mimeType })
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+
+      a.href = url;
+      a.download = filename.value || 'code.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  })
 })
 
 const language = computed(() => {
