@@ -24,6 +24,7 @@ interface EditorRef {
   stopTyping: () => void
   playTyping: (code: string) => void
   clearEditor: () => void
+  setValue: (value: string) => void
   recordingArea: HTMLElement | undefined
 }
 

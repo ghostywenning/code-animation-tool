@@ -134,7 +134,8 @@ defineExpose({
   playTyping,
   recordingArea,
   clearEditor: () => editor?.setValue(''),
-  stopTyping
+  stopTyping,
+  setValue: (value: string) => editor?.setValue(value)
 })
 </script>
 

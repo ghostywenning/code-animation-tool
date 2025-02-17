@@ -18,6 +18,7 @@ interface EditorRef {
   stopTyping: () => void
   playTyping: (code: string) => void
   clearEditor: () => void
+  setValue: (value: string) => void
   recordingArea: HTMLElement | undefined
 }
 
@@ -80,7 +81,12 @@ async function startRecording() {
 async function stopRecording() {
   if (!recorder.isRecording()) return
   
+  // Останавливаем печать
   props.editorRef?.stopTyping()
+  
+  // Восстанавливаем исходный код
+  await new Promise(resolve => setTimeout(resolve, 50))
+  props.editorRef?.setValue(savedCode.value)
   
   await new Promise(resolve => setTimeout(resolve, 100))
   
