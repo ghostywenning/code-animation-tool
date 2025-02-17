@@ -53,15 +53,22 @@ async function startRecording() {
   }
 
   try {
-    await recorder.startRecording(props.recordingArea)
-    isRecording.value = true
-    emit('update:recording', true)
-
+    // Сначала сохраняем код и очищаем редактор
     savedCode.value = props.currentCode
     emit('clear-editor')
     
+    // Небольшая пауза после очистки
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    // Затем начинаем запись
+    await recorder.startRecording(props.recordingArea)
+    isRecording.value = true
+    emit('update:recording', true)
+    
+    // Ждем заданную задержку
     await new Promise(resolve => setTimeout(resolve, startDelay.value))
     
+    // Начинаем печатать
     emit('start-typing', savedCode.value)
   } catch (err) {
     console.error('Failed to start recording:', err)
