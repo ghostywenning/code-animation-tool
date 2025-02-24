@@ -10,6 +10,7 @@ declare module 'vue' {
     CodeEditor: typeof import('./src/components/CodeEditor.vue')['default']
     CodeEditorTabs: typeof import('./src/components/CodeEditorTabs.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
+    ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElForm: typeof import('element-plus/es')['ElForm']
     ElFormItem: typeof import('element-plus/es')['ElFormItem']
     ElIcon: typeof import('element-plus/es')['ElIcon']

@@ -1,18 +1,21 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { ScreenRecorder } from '../services/ScreenRecorder'
 import { isMobileDevice } from '../utils/device'
 import { ElMessage } from 'element-plus'
 import 'element-plus/es/components/message/style/css'
 
-type AspectRatio = '16:9' | '9:16' | '3:4'
+type AspectRatio = '16:9' | '9:16' | '3:4' | 'custom'
 
 const typingSpeed = defineModel<number>('speed')
 const selectedRatio = defineModel<AspectRatio>('ratio', { default: '16:9' })
+const recordingWidth = defineModel<number>('recordingWidth', { default: 1280 })
+const recordingHeight = defineModel<number>('recordingHeight', { default: 720 })
 const startDelay = defineModel<number>('startDelay', { default: 2000 })
 const endDelay = defineModel<number>('endDelay', { default: 2000 })
 const isRecording = ref(false)
 const recorder = new ScreenRecorder()
+const showPreview = defineModel<boolean>('preview', { default: false })
 
 interface EditorRef {
   stopTyping: () => void
@@ -123,6 +126,35 @@ async function handleTypingComplete() {
   }
 }
 
+// Следим за изменением ratio
+watch(selectedRatio, (newRatio) => {
+  switch (newRatio) {
+    case '16:9':
+      recordingWidth.value = 1280
+      recordingHeight.value = 720
+      break
+    case '9:16':
+      recordingWidth.value = 405
+      recordingHeight.value = 720
+      break
+    case '3:4':
+      recordingWidth.value = 540
+      recordingHeight.value = 720
+      break
+  }
+})
+
+// Следим за изменением размеров
+watch([recordingWidth, recordingHeight], () => {
+  const ratios = {
+    '1280:720': '16:9',
+    '405:720': '9:16',
+    '540:720': '3:4'
+  }
+  const currentRatio = `${recordingWidth.value}:${recordingHeight.value}`
+  selectedRatio.value = (ratios[currentRatio as keyof typeof ratios] || 'custom') as AspectRatio
+})
+
 // Экспортируем методы для использования через ref
 defineExpose({
   stopRecording,
@@ -138,7 +170,26 @@ defineExpose({
           <el-option label="Горизонтальное (16:9)" value="16:9" />
           <el-option label="Вертикальное (9:16)" value="9:16" />
           <el-option label="Вертикальное (3:4)" value="3:4" />
+          <el-option label="Произвольное" value="custom" />
         </el-select>
+      </el-form-item>
+
+      <el-form-item label="Ширина записи (px)">
+        <el-input-number 
+          v-model="recordingWidth"
+          :min="200"
+          :max="1920"
+          :step="1"
+        />
+      </el-form-item>
+
+      <el-form-item label="Высота записи (px)">
+        <el-input-number 
+          v-model="recordingHeight"
+          :min="200"
+          :max="1080"
+          :step="1"
+        />
       </el-form-item>
 
       <el-form-item label="Скорость печати (мс)">
@@ -166,6 +217,10 @@ defineExpose({
           :max="50000"
           :step="100"
         />
+      </el-form-item>
+
+      <el-form-item>
+        <el-checkbox v-model="showPreview">Превью размера записи</el-checkbox>
       </el-form-item>
 
       <el-form-item>

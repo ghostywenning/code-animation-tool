@@ -18,6 +18,9 @@ const typingSpeed = ref(100)
 const selectedRatio = ref<'16:9' | '9:16' | '3:4'>('16:9')
 const startDelay = ref(2000)
 const endDelay = ref(2000)
+const recordingWidth = ref(1280)
+const recordingHeight = ref(720)
+const showPreview = ref(false)
 
 // Определяем тип для editorRef
 interface EditorRef {
@@ -63,6 +66,9 @@ function handleTypingComplete() {
         :speed="typingSpeed"
         :is-recording="isRecording"
         :ratio="selectedRatio"
+        :recording-width="recordingWidth"
+        :recording-height="recordingHeight"
+        :is-preview="showPreview"
         @typing-complete="handleTypingComplete"
       >
         <template #tabs="{ isRecording }">
@@ -79,8 +85,11 @@ function handleTypingComplete() {
       ref="exportSettingsRef"
       v-model:speed="typingSpeed"
       v-model:ratio="selectedRatio"
-      v-model:startDelay="startDelay"
-      v-model:endDelay="endDelay"
+      v-model:recording-width="recordingWidth"
+      v-model:recording-height="recordingHeight"
+      v-model:start-delay="startDelay"
+      v-model:end-delay="endDelay"
+      v-model:preview="showPreview"
       :recording-area="editorRef?.recordingArea"
       :current-code="tabs[Number(activeTab)].content"
       :editor-ref="editorRef"

@@ -9,7 +9,10 @@ const filename = defineModel<string>('filename', { default: '' })
 const props = defineProps<{
   speed: number
   isRecording?: boolean
-  ratio?: '16:9' | '9:16' | '3:4'
+  ratio?: '16:9' | '9:16' | '3:4' | 'custom'
+  recordingWidth?: number
+  recordingHeight?: number
+  isPreview?: boolean
 }>()
 const editorContainer = ref<HTMLElement>()
 let editor: monaco.editor.IStandaloneCodeEditor | null = null
@@ -188,10 +191,11 @@ defineExpose({
     class="editor-wrapper"
     :class="{ 
       recording: props.isRecording,
-      'ratio-16-9': props.isRecording && props.ratio === '16:9',
-      'ratio-9-16': props.isRecording && props.ratio === '9:16',
-      'ratio-3-4': props.isRecording && props.ratio === '3:4',
-      'default-size': !props.isRecording
+      preview: props.isPreview && !props.isRecording,
+      'ratio-16-9': (props.isRecording || props.isPreview) && props.ratio === '16:9',
+      'ratio-9-16': (props.isRecording || props.isPreview) && props.ratio === '9:16',
+      'ratio-3-4': (props.isRecording || props.isPreview) && props.ratio === '3:4',
+      'default-size': !props.isRecording && !props.isPreview
     }"
   >
     <div 
@@ -233,35 +237,20 @@ defineExpose({
   max-height: none;
 }
 
-/* Стили для записи */
+/* Стили для записи и превью */
+.editor-wrapper.recording,
+.editor-wrapper.preview {
+  margin: 0 auto;
+  width: v-bind('props.recordingWidth + "px"');
+  height: v-bind('props.recordingHeight + "px"');
+}
+
 .editor-wrapper.recording {
   box-shadow: 0 0 0 2px #ff4444;
-  max-width: 1280px;
-  max-height: 720px;
 }
 
-.editor-wrapper.ratio-16-9 {
-  width: 100%;
-  max-width: 1280px;
-  aspect-ratio: 16/9;
-  height: auto;
-}
-
-.editor-wrapper.ratio-9-16 {
-  width: auto;
-  height: 100%;
-  max-height: 720px;
-  aspect-ratio: 9/16;
-  margin: 0 auto;
-}
-
-.editor-wrapper.ratio-3-4 {
-  width: auto;
-  height: 100%;
-  max-height: 720px;
-  max-width: 540px;
-  aspect-ratio: 3/4;
-  margin: 0 auto;
+.editor-wrapper.preview {
+  box-shadow: 0 0 0 2px #4444ff;
 }
 
 .mac-toolbar {
@@ -321,26 +310,12 @@ defineExpose({
 }
 
 @media (max-width: 768px) {
-  .editor-wrapper.recording {
+  .editor-wrapper.recording,
+  .editor-wrapper.preview {
     max-width: 100%;
-    max-height: none;
-  }
-
-  .editor-wrapper.ratio-9-16 {
-    width: 100%;
-    max-width: 405px;
-    margin: 0 auto;
-  }
-
-  .editor-wrapper.ratio-16-9 {
-    width: 100%;
+    width: auto;
     height: auto;
-  }
-
-  .editor-wrapper.ratio-3-4 {
-    width: 100%;
-    max-width: 540px;
-    margin: 0 auto;
+    aspect-ratio: v-bind('props.recordingWidth + "/" + props.recordingHeight');
   }
 
   .mac-toolbar {
