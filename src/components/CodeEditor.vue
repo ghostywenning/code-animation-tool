@@ -209,7 +209,7 @@ defineExpose({
         <span class="control minimize"></span>
         <span class="control maximize"></span>
       </div>
-      <slot name="tabs" :is-recording="props.isRecording"></slot>
+      <slot name="tabs" />
     </div>
     <div class="editor-container">
       <div 
@@ -330,5 +330,13 @@ defineExpose({
   :deep(.monaco-editor) {
     font-size: 12px !important;
   }
+}
+
+.hide-filename :deep(.monaco-editor .title) {
+  display: none !important;
+}
+
+.hide-filename :deep(.monaco-editor .editor-container) {
+  margin-top: 0 !important;
 }
 </style> 

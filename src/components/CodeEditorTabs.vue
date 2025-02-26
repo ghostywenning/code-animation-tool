@@ -1,5 +1,8 @@
 <template>
-  <div class="tabs-container" @wheel="handleWheel">
+  <div
+    class="tabs-container" 
+    @wheel="handleWheel"
+  >
     <div class="tabs-wrapper">
       <template v-if="props.isRecording">
         <div 

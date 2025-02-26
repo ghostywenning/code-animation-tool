@@ -16,6 +16,7 @@ const endDelay = defineModel<number>('endDelay', { default: 2000 })
 const isRecording = ref(false)
 const recorder = new ScreenRecorder()
 const showPreview = defineModel<boolean>('preview', { default: false })
+const hideFileName = defineModel<boolean>('hideFileName', { default: false })
 
 interface EditorRef {
   stopTyping: () => void
@@ -221,6 +222,10 @@ defineExpose({
 
       <el-form-item>
         <el-checkbox v-model="showPreview">Превью размера записи</el-checkbox>
+      </el-form-item>
+
+      <el-form-item>
+        <el-checkbox v-model="hideFileName">Скрыть название файла при записи</el-checkbox>
       </el-form-item>
 
       <el-form-item>

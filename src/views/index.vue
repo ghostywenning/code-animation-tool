@@ -21,6 +21,7 @@ const endDelay = ref(2000)
 const recordingWidth = ref(1280)
 const recordingHeight = ref(720)
 const showPreview = ref(false)
+const hideFileName = ref(false)
 
 // Определяем тип для editorRef
 interface EditorRef {
@@ -69,10 +70,12 @@ function handleTypingComplete() {
         :recording-width="recordingWidth"
         :recording-height="recordingHeight"
         :is-preview="showPreview"
+        :hide-file-name="hideFileName"
         @typing-complete="handleTypingComplete"
       >
-        <template #tabs="{ isRecording }">
+        <template #tabs>
           <CodeEditorTabs
+            v-if="(!isRecording && !showPreview) || !hideFileName"
             v-model:tabs="tabs"
             v-model:activeTab="activeTab"
             :is-recording="isRecording"
@@ -90,6 +93,7 @@ function handleTypingComplete() {
       v-model:start-delay="startDelay"
       v-model:end-delay="endDelay"
       v-model:preview="showPreview"
+      v-model:hide-file-name="hideFileName"
       :recording-area="editorRef?.recordingArea"
       :current-code="tabs[Number(activeTab)].content"
       :editor-ref="editorRef"
