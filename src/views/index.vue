@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import CodeEditor from '../components/CodeEditor.vue'
 import CodeEditorTabs from '../components/CodeEditorTabs.vue'
 import ExportSettings from '../components/ExportSettings.vue'
+import { StorageService } from '../services/StorageService'
 
 interface Tab {
   name: string
@@ -14,14 +15,44 @@ const tabs = ref<Tab[]>([
   { name: 'code.ts', content: '' }
 ])
 
-const typingSpeed = ref(100)
-const selectedRatio = ref<'16:9' | '9:16' | '3:4'>('16:9')
-const startDelay = ref(2000)
-const endDelay = ref(2000)
-const recordingWidth = ref(1280)
-const recordingHeight = ref(720)
-const showPreview = ref(false)
-const hideFileName = ref(false)
+// Загружаем настройки при старте
+const savedSettings = StorageService.loadSettings() || StorageService.getDefaultSettings()
+
+const typingSpeed = ref(savedSettings.typingSpeed)
+const selectedRatio = ref(savedSettings.selectedRatio)
+const startDelay = ref(savedSettings.startDelay)
+const endDelay = ref(savedSettings.endDelay)
+const recordingWidth = ref(savedSettings.recordingWidth)
+const recordingHeight = ref(savedSettings.recordingHeight)
+const showPreview = ref(savedSettings.showPreview)
+const hideFileName = ref(savedSettings.hideFileName)
+
+// Следим за изменениями настроек и сохраняем их
+watch(
+  [
+    typingSpeed,
+    selectedRatio,
+    startDelay,
+    endDelay,
+    recordingWidth,
+    recordingHeight,
+    showPreview,
+    hideFileName
+  ],
+  () => {
+    StorageService.saveSettings({
+      typingSpeed: typingSpeed.value,
+      selectedRatio: selectedRatio.value,
+      startDelay: startDelay.value,
+      endDelay: endDelay.value,
+      recordingWidth: recordingWidth.value,
+      recordingHeight: recordingHeight.value,
+      showPreview: showPreview.value,
+      hideFileName: hideFileName.value
+    })
+  },
+  { deep: true }
+)
 
 // Определяем тип для editorRef
 interface EditorRef {
