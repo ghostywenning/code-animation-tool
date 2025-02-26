@@ -13,6 +13,7 @@ const props = defineProps<{
   recordingWidth?: number
   recordingHeight?: number
   isPreview?: boolean
+  fontSize?: number
 }>()
 const editorContainer = ref<HTMLElement>()
 let editor: monaco.editor.IStandaloneCodeEditor | null = null
@@ -34,7 +35,7 @@ onMounted(() => {
     language: language.value,
     theme: 'custom-dark',
     minimap: { enabled: false },
-    fontSize: 14,
+    fontSize: props.fontSize || 14,
     lineNumbers: 'on',
     automaticLayout: true,
     bracketPairColorization: { enabled: true },
@@ -141,6 +142,12 @@ watch([code, language], ([newCode, newLang]) => {
   
   if (editor.getValue() !== newCode) {
     editor.setValue(newCode || '')
+  }
+})
+
+watch(() => props.fontSize, (newSize) => {
+  if (editor && newSize) {
+    editor.updateOptions({ fontSize: newSize })
   }
 })
 

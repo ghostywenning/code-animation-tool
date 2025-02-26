@@ -17,6 +17,7 @@ const isRecording = ref(false)
 const recorder = new ScreenRecorder()
 const showPreview = defineModel<boolean>('preview', { default: false })
 const hideFileName = defineModel<boolean>('hideFileName', { default: false })
+const fontSize = defineModel<number>('fontSize', { default: 14 })
 
 interface EditorRef {
   stopTyping: () => void
@@ -217,6 +218,15 @@ defineExpose({
           :min="0"
           :max="50000"
           :step="100"
+        />
+      </el-form-item>
+
+      <el-form-item label="Размер шрифта (px)">
+        <el-input-number 
+          v-model="fontSize"
+          :min="10"
+          :max="32"
+          :step="1"
         />
       </el-form-item>
 

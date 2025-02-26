@@ -15,16 +15,20 @@ export class ScreenRecorder {
     }
 
     try {
-      // Создаем canvas с размерами элемента
+      // Создаем canvas с размерами элемента с учетом масштаба экрана
       this.canvas = document.createElement('canvas');
       const rect = element.getBoundingClientRect();
-      this.canvas.width = rect.width;
-      this.canvas.height = rect.height;
+      const scale = window.devicePixelRatio;
+      this.canvas.width = rect.width * scale;
+      this.canvas.height = rect.height * scale;
       this.context = this.canvas.getContext('2d');
 
       if (!this.context) {
         throw new Error('Failed to get canvas context');
       }
+
+      // Масштабируем контекст
+      this.context.scale(scale, scale);
 
       // Небольшая задержка для инициализации canvas
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -58,17 +62,17 @@ export class ScreenRecorder {
             scale: window.devicePixelRatio,
             useCORS: true,
             allowTaint: true,
-            width: this.canvas.width,
-            height: this.canvas.height
+            width: rect.width,  // используем оригинальную ширину
+            height: rect.height // используем оригинальную высоту
           });
           
           // Проверяем, что контекст все еще существует
           if (this.context && this.canvas) {
             // Очищаем canvas
-            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.context.clearRect(0, 0, rect.width, rect.height); // очищаем с учетом оригинальных размеров
             
             // Рисуем снимок на canvas
-            this.context.drawImage(snapshot, 0, 0);
+            this.context.drawImage(snapshot, 0, 0, rect.width, rect.height);
             
             // Запрашиваем следующий кадр только если запись все еще идет
             if (this.mediaRecorder?.state === 'recording') {

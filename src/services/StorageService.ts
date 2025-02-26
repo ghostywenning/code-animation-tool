@@ -7,6 +7,7 @@ interface Settings {
   recordingHeight: number
   showPreview: boolean
   hideFileName: boolean
+  fontSize: number
 }
 
 const STORAGE_KEY = 'code-animation-settings'
@@ -36,7 +37,8 @@ export class StorageService {
       recordingWidth: 1280,
       recordingHeight: 720,
       showPreview: false,
-      hideFileName: false
+      hideFileName: false,
+      fontSize: 14
     }
   }
 } 

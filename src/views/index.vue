@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, watch } from 'vue'
 import CodeEditor from '../components/CodeEditor.vue'
 import CodeEditorTabs from '../components/CodeEditorTabs.vue'
 import ExportSettings from '../components/ExportSettings.vue'
@@ -26,6 +26,7 @@ const recordingWidth = ref(savedSettings.recordingWidth)
 const recordingHeight = ref(savedSettings.recordingHeight)
 const showPreview = ref(savedSettings.showPreview)
 const hideFileName = ref(savedSettings.hideFileName)
+const fontSize = ref(savedSettings.fontSize)
 
 // Следим за изменениями настроек и сохраняем их
 watch(
@@ -37,7 +38,8 @@ watch(
     recordingWidth,
     recordingHeight,
     showPreview,
-    hideFileName
+    hideFileName,
+    fontSize
   ],
   () => {
     StorageService.saveSettings({
@@ -48,7 +50,8 @@ watch(
       recordingWidth: recordingWidth.value,
       recordingHeight: recordingHeight.value,
       showPreview: showPreview.value,
-      hideFileName: hideFileName.value
+      hideFileName: hideFileName.value,
+      fontSize: fontSize.value
     })
   },
   { deep: true }
@@ -102,6 +105,7 @@ function handleTypingComplete() {
         :recording-height="recordingHeight"
         :is-preview="showPreview"
         :hide-file-name="hideFileName"
+        :font-size="fontSize"
         @typing-complete="handleTypingComplete"
       >
         <template #tabs>
@@ -125,6 +129,7 @@ function handleTypingComplete() {
       v-model:end-delay="endDelay"
       v-model:preview="showPreview"
       v-model:hide-file-name="hideFileName"
+      v-model:font-size="fontSize"
       :recording-area="editorRef?.recordingArea"
       :current-code="tabs[Number(activeTab)].content"
       :editor-ref="editorRef"
