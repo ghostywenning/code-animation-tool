@@ -15,6 +15,7 @@ const props = defineProps<{
   isPreview?: boolean
   fontSize?: number
   hideLineNumbers?: boolean
+  title?: string
 }>()
 const editorContainer = ref<HTMLElement>()
 let editor: monaco.editor.IStandaloneCodeEditor | null = null
@@ -229,6 +230,7 @@ defineExpose({
         <span class="control minimize"></span>
         <span class="control maximize"></span>
       </div>
+      <div class="window-title" v-if="props.title && (props.isRecording || props.isPreview)">{{ props.title }}</div>
       <slot name="tabs" />
     </div>
     <div class="editor-container">
@@ -280,12 +282,14 @@ defineExpose({
   align-items: center;
   padding: 0 12px;
   -webkit-app-region: drag;
+  position: relative;
 }
 
 .window-controls {
   display: flex;
   gap: 8px;
   margin-right: 16px;
+  margin-left: v-bind('props.hideLineNumbers ? "16px" : "0"');
 }
 
 .control {
@@ -391,5 +395,18 @@ defineExpose({
 /* Убираем отступ слева при отключенной нумерации */
 :deep(.monaco-editor .margin) {
   width: v-bind('props.hideLineNumbers ? "0 !important" : "auto"');
+}
+
+.window-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #888;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 50%;
+  pointer-events: none;
 }
 </style> 

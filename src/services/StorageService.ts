@@ -14,6 +14,7 @@ interface Settings {
   }>
   activeTab: string
   hideLineNumbers: boolean
+  windowTitle: string
 }
 
 const STORAGE_KEY = 'code-animation-settings'
@@ -47,7 +48,8 @@ export class StorageService {
       fontSize: 14,
       lastTabs: [{ name: 'code.ts', content: '' }],
       activeTab: '0',
-      hideLineNumbers: false
+      hideLineNumbers: false,
+      windowTitle: '',
     }
   }
 } 

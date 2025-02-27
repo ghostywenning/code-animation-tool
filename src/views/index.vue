@@ -26,6 +26,7 @@ const showPreview = ref(savedSettings.showPreview)
 const hideFileName = ref(savedSettings.hideFileName)
 const fontSize = ref(savedSettings.fontSize)
 const hideLineNumbers = ref(false)
+const windowTitle = ref(savedSettings.windowTitle || '')
 
 // Следим за изменениями настроек и сохраняем их
 watch(
@@ -41,7 +42,8 @@ watch(
     fontSize,
     hideLineNumbers,
     tabs,
-    activeTab
+    activeTab,
+    windowTitle
   ],
   () => {
     StorageService.saveSettings({
@@ -56,7 +58,8 @@ watch(
       fontSize: fontSize.value,
       hideLineNumbers: hideLineNumbers.value,
       lastTabs: tabs.value,
-      activeTab: activeTab.value
+      activeTab: activeTab.value,
+      windowTitle: windowTitle.value
     })
   },
   { deep: true }
@@ -112,6 +115,7 @@ function handleTypingComplete() {
         :hide-file-name="hideFileName"
         :font-size="fontSize"
         :hide-line-numbers="hideLineNumbers"
+        :title="windowTitle"
         @typing-complete="handleTypingComplete"
       >
         <template #tabs>
@@ -137,6 +141,7 @@ function handleTypingComplete() {
       v-model:hide-file-name="hideFileName"
       v-model:font-size="fontSize"
       v-model:hide-line-numbers="hideLineNumbers"
+      v-model:title="windowTitle"
       :recording-area="editorRef?.recordingArea"
       :current-code="tabs[Number(activeTab)].content"
       :editor-ref="editorRef"

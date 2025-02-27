@@ -19,6 +19,7 @@ const showPreview = defineModel<boolean>('preview', { default: false })
 const hideFileName = defineModel<boolean>('hideFileName', { default: false })
 const hideLineNumbers = defineModel<boolean>('hideLineNumbers', { default: false })
 const fontSize = defineModel<number>('fontSize', { default: 14 })
+const windowTitle = defineModel<string>('title', { default: '' })
 
 interface EditorRef {
   stopTyping: () => void
@@ -229,6 +230,10 @@ defineExpose({
           :max="32"
           :step="1"
         />
+      </el-form-item>
+
+      <el-form-item label="Заголовок окна">
+        <el-input v-model="windowTitle" placeholder="Введите заголовок" />
       </el-form-item>
 
       <el-form-item>
