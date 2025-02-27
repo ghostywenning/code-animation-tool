@@ -25,6 +25,7 @@ const recordingHeight = ref(savedSettings.recordingHeight)
 const showPreview = ref(savedSettings.showPreview)
 const hideFileName = ref(savedSettings.hideFileName)
 const fontSize = ref(savedSettings.fontSize)
+const hideLineNumbers = ref(false)
 
 // Следим за изменениями настроек и сохраняем их
 watch(
@@ -38,6 +39,7 @@ watch(
     showPreview,
     hideFileName,
     fontSize,
+    hideLineNumbers,
     tabs,
     activeTab
   ],
@@ -52,6 +54,7 @@ watch(
       showPreview: showPreview.value,
       hideFileName: hideFileName.value,
       fontSize: fontSize.value,
+      hideLineNumbers: hideLineNumbers.value,
       lastTabs: tabs.value,
       activeTab: activeTab.value
     })
@@ -108,6 +111,7 @@ function handleTypingComplete() {
         :is-preview="showPreview"
         :hide-file-name="hideFileName"
         :font-size="fontSize"
+        :hide-line-numbers="hideLineNumbers"
         @typing-complete="handleTypingComplete"
       >
         <template #tabs>
@@ -132,6 +136,7 @@ function handleTypingComplete() {
       v-model:preview="showPreview"
       v-model:hide-file-name="hideFileName"
       v-model:font-size="fontSize"
+      v-model:hide-line-numbers="hideLineNumbers"
       :recording-area="editorRef?.recordingArea"
       :current-code="tabs[Number(activeTab)].content"
       :editor-ref="editorRef"

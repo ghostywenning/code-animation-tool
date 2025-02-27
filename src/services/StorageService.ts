@@ -13,6 +13,7 @@ interface Settings {
     content: string
   }>
   activeTab: string
+  hideLineNumbers: boolean
 }
 
 const STORAGE_KEY = 'code-animation-settings'
@@ -25,7 +26,7 @@ export class StorageService {
   static loadSettings(): Settings | null {
     const settings = localStorage.getItem(STORAGE_KEY)
     if (!settings) return null
-    
+
     try {
       return JSON.parse(settings)
     } catch {
@@ -45,7 +46,8 @@ export class StorageService {
       hideFileName: false,
       fontSize: 14,
       lastTabs: [{ name: 'code.ts', content: '' }],
-      activeTab: '0'
+      activeTab: '0',
+      hideLineNumbers: false
     }
   }
 } 

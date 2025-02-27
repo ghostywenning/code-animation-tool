@@ -14,6 +14,7 @@ const props = defineProps<{
   recordingHeight?: number
   isPreview?: boolean
   fontSize?: number
+  hideLineNumbers?: boolean
 }>()
 const editorContainer = ref<HTMLElement>()
 let editor: monaco.editor.IStandaloneCodeEditor | null = null
@@ -36,7 +37,7 @@ onMounted(() => {
     theme: 'custom-dark',
     minimap: { enabled: false },
     fontSize: props.fontSize || 14,
-    lineNumbers: 'on',
+    lineNumbers: props.hideLineNumbers ? 'off' : 'on',
     automaticLayout: true,
     bracketPairColorization: { enabled: true },
     renderLineHighlight: 'all',
@@ -154,6 +155,12 @@ watch([code, language], ([newCode, newLang]) => {
 watch(() => props.fontSize, (newSize) => {
   if (editor && newSize) {
     editor.updateOptions({ fontSize: newSize })
+  }
+})
+
+watch(() => props.hideLineNumbers, (newValue) => {
+  if (editor) {
+    editor.updateOptions({ lineNumbers: newValue ? 'off' : 'on' })
   }
 })
 
@@ -377,5 +384,12 @@ defineExpose({
   bottom: 0;
   width: 1px;
   background-color: #3c3c3c;
+  /* Скрываем линию, если нумерация отключена */
+  display: v-bind('props.hideLineNumbers ? "none" : "block"');
+}
+
+/* Убираем отступ слева при отключенной нумерации */
+:deep(.monaco-editor .margin) {
+  width: v-bind('props.hideLineNumbers ? "0 !important" : "auto"');
 }
 </style> 

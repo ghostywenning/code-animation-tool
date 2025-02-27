@@ -17,6 +17,7 @@ const isRecording = ref(false)
 const recorder = new ScreenRecorder()
 const showPreview = defineModel<boolean>('preview', { default: false })
 const hideFileName = defineModel<boolean>('hideFileName', { default: false })
+const hideLineNumbers = defineModel<boolean>('hideLineNumbers', { default: false })
 const fontSize = defineModel<number>('fontSize', { default: 14 })
 
 interface EditorRef {
@@ -236,6 +237,10 @@ defineExpose({
 
       <el-form-item>
         <el-checkbox v-model="hideFileName">Скрыть название файла при записи</el-checkbox>
+      </el-form-item>
+
+      <el-form-item>
+        <el-checkbox v-model="hideLineNumbers">Отключить нумерацию строк</el-checkbox>
       </el-form-item>
 
       <el-form-item>
