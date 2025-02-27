@@ -10,10 +10,8 @@ interface Tab {
   content: string
 }
 
-const activeTab = ref('0')
-const tabs = ref<Tab[]>([
-  { name: 'code.ts', content: '' }
-])
+const tabs = ref<Tab[]>(StorageService.loadSettings()?.lastTabs || [{ name: 'code.ts', content: '' }])
+const activeTab = ref(StorageService.loadSettings()?.activeTab || '0')
 
 // Загружаем настройки при старте
 const savedSettings = StorageService.loadSettings() || StorageService.getDefaultSettings()
@@ -39,7 +37,9 @@ watch(
     recordingHeight,
     showPreview,
     hideFileName,
-    fontSize
+    fontSize,
+    tabs,
+    activeTab
   ],
   () => {
     StorageService.saveSettings({
@@ -51,7 +51,9 @@ watch(
       recordingHeight: recordingHeight.value,
       showPreview: showPreview.value,
       hideFileName: hideFileName.value,
-      fontSize: fontSize.value
+      fontSize: fontSize.value,
+      lastTabs: tabs.value,
+      activeTab: activeTab.value
     })
   },
   { deep: true }

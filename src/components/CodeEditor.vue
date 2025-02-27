@@ -43,6 +43,7 @@ onMounted(() => {
     scrollBeyondLastLine: false,
     smoothScrolling: true,
     tabSize: 2,
+    insertSpaces: true,
     wordWrap: 'on',
     suggestOnTriggerCharacters: true,
     quickSuggestions: {
@@ -60,6 +61,11 @@ onMounted(() => {
       showModules: true,
       showProperties: true,
       showWords: true
+    },
+    guides: {
+      indentation: false,
+      highlightActiveIndentation: false,
+      bracketPairs: false
     }
   });
 
@@ -345,5 +351,31 @@ defineExpose({
 
 .hide-filename :deep(.monaco-editor .editor-container) {
   margin-top: 0 !important;
+}
+
+/* Применяем небольшой scale во время записи для улучшения качества рендеринга */
+.recording :deep(.monaco-editor),
+.preview :deep(.monaco-editor) {
+  transform: scale(1.0001); /* Минимальный scale для принудительного пиксельного рендеринга */
+  transform-origin: left top;
+}
+
+/* Скрываем стандартный разделитель Monaco и добавляем свой */
+:deep(.monaco-editor .margin-view-overlays) {
+  border-right: none !important;
+}
+
+:deep(.monaco-editor .margin) {
+  position: relative;
+}
+
+:deep(.monaco-editor .margin)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: #3c3c3c;
 }
 </style> 

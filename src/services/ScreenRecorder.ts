@@ -15,20 +15,19 @@ export class ScreenRecorder {
     }
 
     try {
-      // Создаем canvas с размерами элемента с учетом масштаба экрана
       this.canvas = document.createElement('canvas');
       const rect = element.getBoundingClientRect();
-      const scale = window.devicePixelRatio;
-      this.canvas.width = rect.width * scale;
-      this.canvas.height = rect.height * scale;
+      
+      this.canvas.width = rect.width;
+      this.canvas.height = rect.height;
       this.context = this.canvas.getContext('2d');
 
       if (!this.context) {
         throw new Error('Failed to get canvas context');
       }
 
-      // Масштабируем контекст
-      this.context.scale(scale, scale);
+      // Настраиваем качество рендеринга
+      this.context.imageSmoothingEnabled = false;
 
       // Небольшая задержка для инициализации canvas
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -55,26 +54,20 @@ export class ScreenRecorder {
         }
 
         try {
-          // Создаем снимок элемента
           const snapshot = await html2canvas(element, {
             backgroundColor: null,
             logging: false,
-            scale: window.devicePixelRatio,
+            scale: 1, // Используем тот же масштаб
             useCORS: true,
             allowTaint: true,
-            width: rect.width,  // используем оригинальную ширину
-            height: rect.height // используем оригинальную высоту
+            width: rect.width,
+            height: rect.height
           });
           
-          // Проверяем, что контекст все еще существует
           if (this.context && this.canvas) {
-            // Очищаем canvas
-            this.context.clearRect(0, 0, rect.width, rect.height); // очищаем с учетом оригинальных размеров
+            this.context.clearRect(0, 0, rect.width, rect.height);
+            this.context.drawImage(snapshot, 0, 0);
             
-            // Рисуем снимок на canvas
-            this.context.drawImage(snapshot, 0, 0, rect.width, rect.height);
-            
-            // Запрашиваем следующий кадр только если запись все еще идет
             if (this.mediaRecorder?.state === 'recording') {
               this.animationFrame = requestAnimationFrame(captureFrame);
             }

@@ -8,6 +8,11 @@ interface Settings {
   showPreview: boolean
   hideFileName: boolean
   fontSize: number
+  lastTabs: Array<{
+    name: string
+    content: string
+  }>
+  activeTab: string
 }
 
 const STORAGE_KEY = 'code-animation-settings'
@@ -38,7 +43,9 @@ export class StorageService {
       recordingHeight: 720,
       showPreview: false,
       hideFileName: false,
-      fontSize: 14
+      fontSize: 14,
+      lastTabs: [{ name: 'code.ts', content: '' }],
+      activeTab: '0'
     }
   }
 } 
