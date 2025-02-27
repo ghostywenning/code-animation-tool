@@ -20,6 +20,9 @@ const hideFileName = defineModel<boolean>('hideFileName', { default: false })
 const hideLineNumbers = defineModel<boolean>('hideLineNumbers', { default: false })
 const fontSize = defineModel<number>('fontSize', { default: 14 })
 const windowTitle = defineModel<string>('title', { default: '' })
+const showBorder = defineModel<boolean>('showBorder', { default: false })
+const borderColor = defineModel<string>('borderColor', { default: '#4444ff' })
+const borderRadius = defineModel<number>('borderRadius', { default: 0 })
 
 interface EditorRef {
   stopTyping: () => void
@@ -159,6 +162,13 @@ watch([recordingWidth, recordingHeight], () => {
   selectedRatio.value = (ratios[currentRatio as keyof typeof ratios] || 'custom') as AspectRatio
 })
 
+// Следим за изменением заголовка
+watch(windowTitle, (newTitle) => {
+  if (newTitle) {
+    hideFileName.value = true
+  }
+})
+
 // Экспортируем методы для использования через ref
 defineExpose({
   stopRecording,
@@ -190,7 +200,7 @@ defineExpose({
       <el-form-item label="Высота записи (px)">
         <el-input-number 
           v-model="recordingHeight"
-          :min="200"
+          :min="1"
           :max="1080"
           :step="1"
         />
@@ -241,11 +251,34 @@ defineExpose({
       </el-form-item>
 
       <el-form-item>
-        <el-checkbox v-model="hideFileName">Скрыть название файла при записи</el-checkbox>
+        <el-checkbox 
+          v-model="hideFileName" 
+          :disabled="!!windowTitle"
+          :title="windowTitle ? 'При установленном заголовке имя файла автоматически скрывается' : ''"
+        >
+          Скрыть название файла при записи
+        </el-checkbox>
       </el-form-item>
 
       <el-form-item>
         <el-checkbox v-model="hideLineNumbers">Отключить нумерацию строк</el-checkbox>
+      </el-form-item>
+
+      <el-form-item>
+        <el-checkbox v-model="showBorder">Показывать рамку</el-checkbox>
+      </el-form-item>
+
+      <el-form-item v-if="showBorder" label="Цвет рамки">
+        <el-color-picker v-model="borderColor" />
+      </el-form-item>
+
+      <el-form-item v-if="showBorder" label="Закругление краёв (px)">
+        <el-input-number 
+          v-model="borderRadius"
+          :min="0"
+          :max="20"
+          :step="1"
+        />
       </el-form-item>
 
       <el-form-item>

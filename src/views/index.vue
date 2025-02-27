@@ -25,8 +25,11 @@ const recordingHeight = ref(savedSettings.recordingHeight)
 const showPreview = ref(savedSettings.showPreview)
 const hideFileName = ref(savedSettings.hideFileName)
 const fontSize = ref(savedSettings.fontSize)
-const hideLineNumbers = ref(false)
+const hideLineNumbers = ref(savedSettings.hideLineNumbers)
 const windowTitle = ref(savedSettings.windowTitle || '')
+const showBorder = ref(savedSettings.showBorder)
+const borderColor = ref(savedSettings.borderColor)
+const borderRadius = ref(savedSettings.borderRadius)
 
 // Следим за изменениями настроек и сохраняем их
 watch(
@@ -43,7 +46,10 @@ watch(
     hideLineNumbers,
     tabs,
     activeTab,
-    windowTitle
+    windowTitle,
+    showBorder,
+    borderColor,
+    borderRadius
   ],
   () => {
     StorageService.saveSettings({
@@ -59,7 +65,10 @@ watch(
       hideLineNumbers: hideLineNumbers.value,
       lastTabs: tabs.value,
       activeTab: activeTab.value,
-      windowTitle: windowTitle.value
+      windowTitle: windowTitle.value,
+      showBorder: showBorder.value,
+      borderColor: borderColor.value,
+      borderRadius: borderRadius.value
     })
   },
   { deep: true }
@@ -116,6 +125,9 @@ function handleTypingComplete() {
         :font-size="fontSize"
         :hide-line-numbers="hideLineNumbers"
         :title="windowTitle"
+        :show-border="showBorder"
+        :border-color="borderColor"
+        :border-radius="borderRadius"
         @typing-complete="handleTypingComplete"
       >
         <template #tabs>
@@ -142,6 +154,9 @@ function handleTypingComplete() {
       v-model:font-size="fontSize"
       v-model:hide-line-numbers="hideLineNumbers"
       v-model:title="windowTitle"
+      v-model:show-border="showBorder"
+      v-model:border-color="borderColor"
+      v-model:border-radius="borderRadius"
       :recording-area="editorRef?.recordingArea"
       :current-code="tabs[Number(activeTab)].content"
       :editor-ref="editorRef"

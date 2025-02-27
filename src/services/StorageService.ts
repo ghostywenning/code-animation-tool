@@ -15,6 +15,9 @@ interface Settings {
   activeTab: string
   hideLineNumbers: boolean
   windowTitle: string
+  showBorder: boolean
+  borderColor: string
+  borderRadius: number
 }
 
 const STORAGE_KEY = 'code-animation-settings'
@@ -50,6 +53,9 @@ export class StorageService {
       activeTab: '0',
       hideLineNumbers: false,
       windowTitle: '',
+      showBorder: false,
+      borderColor: '#4444ff',
+      borderRadius: 0,
     }
   }
 } 

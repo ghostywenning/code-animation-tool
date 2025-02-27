@@ -16,6 +16,9 @@ const props = defineProps<{
   fontSize?: number
   hideLineNumbers?: boolean
   title?: string
+  showBorder?: boolean
+  borderColor?: string
+  borderRadius?: number
 }>()
 const editorContainer = ref<HTMLElement>()
 let editor: monaco.editor.IStandaloneCodeEditor | null = null
@@ -48,6 +51,8 @@ onMounted(() => {
     insertSpaces: true,
     wordWrap: 'on',
     suggestOnTriggerCharacters: true,
+    glyphMargin: !props.hideLineNumbers,
+    folding: false,
     quickSuggestions: {
       other: true,
       comments: true,
@@ -212,18 +217,16 @@ defineExpose({
     class="editor-wrapper"
     :class="{ 
       recording: props.isRecording,
-      preview: props.isPreview && !props.isRecording,
-      'ratio-16-9': (props.isRecording || props.isPreview) && props.ratio === '16:9',
-      'ratio-9-16': (props.isRecording || props.isPreview) && props.ratio === '9:16',
-      'ratio-3-4': (props.isRecording || props.isPreview) && props.ratio === '3:4',
+      preview: props.isPreview,
       'default-size': !props.isRecording && !props.isPreview
     }"
+    :style="{ 
+      borderRadius: props.isRecording || props.isPreview ? `${props.borderRadius}px` : '0',
+      border: props.showBorder && (props.isRecording || props.isPreview) ? `2px solid ${props.borderColor}` : 'none',
+      outline: props.isRecording ? '2px solid #ff4444' : 'none',
+      outlineOffset: props.isRecording ? '2px' : '0'
+    }"
   >
-    <div 
-      v-if="props.isRecording" 
-      class="recording-overlay"
-    />
-    
     <div class="mac-toolbar">
       <div class="window-controls">
         <span class="control close"></span>
@@ -249,6 +252,7 @@ defineExpose({
   flex-direction: column;
   background-color: #1e1e1e;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 /* Стиль по умолчанию (когда нет записи) */
@@ -259,20 +263,13 @@ defineExpose({
   max-height: none;
 }
 
-/* Стили для записи и превью */
 .editor-wrapper.recording,
 .editor-wrapper.preview {
   margin: 0 auto;
   width: v-bind('props.recordingWidth + "px"');
   height: v-bind('props.recordingHeight + "px"');
-}
-
-.editor-wrapper.recording {
-  box-shadow: 0 0 0 2px #ff4444;
-}
-
-.editor-wrapper.preview {
-  box-shadow: 0 0 0 2px #4444ff;
+  position: relative;
+  overflow: hidden;
 }
 
 .mac-toolbar {
@@ -289,7 +286,7 @@ defineExpose({
   display: flex;
   gap: 8px;
   margin-right: 16px;
-  margin-left: v-bind('props.hideLineNumbers ? "16px" : "0"');
+  margin-left: v-bind('props.hideLineNumbers ? "8px" : "0"');
 }
 
 .control {
@@ -320,6 +317,32 @@ defineExpose({
 
 :deep(.monaco-editor) {
   height: 100% !important;
+}
+
+/* Скрываем стандартный разделитель Monaco и добавляем свой */
+:deep(.monaco-editor .margin-view-overlays) {
+  border-right: none !important;
+}
+
+:deep(.monaco-editor .margin) {
+  position: relative;
+  width: v-bind('props.hideLineNumbers ? "0 !important" : "auto"');
+}
+
+:deep(.monaco-editor .margin)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: #3c3c3c;
+  display: v-bind('props.hideLineNumbers ? "none" : "block"');
+}
+
+/* Корректируем отступ для контента */
+:deep(.monaco-editor .monaco-scrollable-element) {
+  left: v-bind('props.hideLineNumbers ? "0 !important" : "auto"');
 }
 
 .recording-overlay {
@@ -354,6 +377,12 @@ defineExpose({
   :deep(.monaco-editor) {
     font-size: 12px !important;
   }
+
+  .recording-status {
+    right: 16px;
+    top: auto;
+    bottom: 220px;
+  }
 }
 
 .hide-filename :deep(.monaco-editor .title) {
@@ -367,34 +396,8 @@ defineExpose({
 /* Применяем небольшой scale во время записи для улучшения качества рендеринга */
 .recording :deep(.monaco-editor),
 .preview :deep(.monaco-editor) {
-  transform: scale(1.0001); /* Минимальный scale для принудительного пиксельного рендеринга */
+  transform: scale(1.0001);
   transform-origin: left top;
-}
-
-/* Скрываем стандартный разделитель Monaco и добавляем свой */
-:deep(.monaco-editor .margin-view-overlays) {
-  border-right: none !important;
-}
-
-:deep(.monaco-editor .margin) {
-  position: relative;
-}
-
-:deep(.monaco-editor .margin)::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background-color: #3c3c3c;
-  /* Скрываем линию, если нумерация отключена */
-  display: v-bind('props.hideLineNumbers ? "none" : "block"');
-}
-
-/* Убираем отступ слева при отключенной нумерации */
-:deep(.monaco-editor .margin) {
-  width: v-bind('props.hideLineNumbers ? "0 !important" : "auto"');
 }
 
 .window-title {
@@ -408,5 +411,40 @@ defineExpose({
   text-overflow: ellipsis;
   max-width: 50%;
   pointer-events: none;
+}
+
+.recording-status {
+  position: fixed;
+  top: 16px;
+  right: 332px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 100;
+}
+
+.recording-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ff4444;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 </style> 
