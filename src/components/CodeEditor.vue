@@ -53,6 +53,7 @@ onMounted(() => {
     suggestOnTriggerCharacters: true,
     glyphMargin: !props.hideLineNumbers,
     folding: false,
+    stickyScroll: { enabled: false },
     quickSuggestions: {
       other: true,
       comments: true,
@@ -84,7 +85,7 @@ onMounted(() => {
   editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, async () => {
     const content = editor?.getValue() || ''
     const ext = filename.value.split('.').pop()?.toLowerCase()
-    
+
     const mimeType = {
       'js': 'text/javascript',
       'ts': 'text/typescript',
@@ -93,7 +94,7 @@ onMounted(() => {
       'css': 'text/css',
       'json': 'application/json',
     }[ext || ''] || 'text/plain'
-    
+
     if ('showSaveFilePicker' in window) {
       try {
         const handle = await (window as any).showSaveFilePicker({
@@ -146,13 +147,13 @@ const language = computed(() => {
 
 watch([code, language], ([newCode, newLang]) => {
   if (!editor) return
-  
+
   const model = editor.getModel()
 
   if (model) {
     monaco.editor.setModelLanguage(model, newLang)
   }
-  
+
   if (editor.getValue() !== newCode) {
     editor.setValue(newCode || '')
   }
@@ -172,26 +173,26 @@ watch(() => props.hideLineNumbers, (newValue) => {
 
 async function playTyping(targetCode: string) {
   if (!editor || isPlaying.value) return
-  
+
   isPlaying.value = true
   shouldStop.value = false
   emit('typing-start')
   editor.setValue('')
-  
+
   for (let i = 0; i < targetCode.length; i++) {
     if (shouldStop.value || !isPlaying.value) break
-    
+
     editor.setValue(targetCode.slice(0, i + 1))
-    
+
     const position = editor.getModel()?.getPositionAt(i + 1)
     if (position) {
       editor.setPosition(position)
       editor.revealPositionInCenter(position)
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, props.speed))
   }
-  
+
   isPlaying.value = false
   emit('typing-complete')
 }
@@ -212,21 +213,16 @@ defineExpose({
 </script>
 
 <template>
-  <div 
-    ref="recordingArea"
-    class="editor-wrapper"
-    :class="{ 
-      recording: props.isRecording,
-      preview: props.isPreview,
-      'default-size': !props.isRecording && !props.isPreview
-    }"
-    :style="{ 
-      borderRadius: props.isRecording || props.isPreview ? `${props.borderRadius}px` : '0',
-      border: props.showBorder && (props.isRecording || props.isPreview) ? `2px solid ${props.borderColor}` : 'none',
-      outline: props.isRecording ? '2px solid #ff4444' : 'none',
-      outlineOffset: props.isRecording ? '2px' : '0'
-    }"
-  >
+  <div ref="recordingArea" class="editor-wrapper" :class="{
+    recording: props.isRecording,
+    preview: props.isPreview,
+    'default-size': !props.isRecording && !props.isPreview
+  }" :style="{
+    borderRadius: props.isRecording || props.isPreview ? `${props.borderRadius}px` : '0',
+    border: props.showBorder && (props.isRecording || props.isPreview) ? `2px solid ${props.borderColor}` : 'none',
+    outline: props.isRecording ? '2px solid #ff4444' : 'none',
+    outlineOffset: props.isRecording ? '2px' : '0'
+  }">
     <div class="mac-toolbar">
       <div class="window-controls">
         <span class="control close"></span>
@@ -237,10 +233,7 @@ defineExpose({
       <slot name="tabs" />
     </div>
     <div class="editor-container">
-      <div 
-        ref="editorContainer" 
-        class="editor-container"
-      />
+      <div ref="editorContainer" class="editor-container" />
     </div>
   </div>
 </template>
@@ -317,32 +310,51 @@ defineExpose({
 
 :deep(.monaco-editor) {
   height: 100% !important;
-}
 
-/* Скрываем стандартный разделитель Monaco и добавляем свой */
-:deep(.monaco-editor .margin-view-overlays) {
-  border-right: none !important;
-}
+  .margin-view-overlays {
+    border-right: none !important;
+  }
 
-:deep(.monaco-editor .margin) {
-  position: relative;
-  width: v-bind('props.hideLineNumbers ? "0 !important" : "auto"');
-}
+  .margin {
+    position: relative;
+    width: v-bind('props.hideLineNumbers ? "0 !important" : "auto"');
 
-:deep(.monaco-editor .margin)::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background-color: #3c3c3c;
-  display: v-bind('props.hideLineNumbers ? "none" : "block"');
-}
+    &::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background-color: #3c3c3c;
+      display: v-bind('props.hideLineNumbers ? "none" : "block"');
+    }
+  }
 
-/* Корректируем отступ для контента */
-:deep(.monaco-editor .monaco-scrollable-element) {
-  left: v-bind('props.hideLineNumbers ? "0 !important" : "auto"');
+  .monaco-scrollable-element {
+    left: v-bind('props.hideLineNumbers ? "0 !important" : "auto"');
+
+    &>.scrollbar {
+      &.vertical {
+        width: 12px !important;
+
+        .slider {
+          width: 6px !important;
+          left: 3px !important;
+          background: rgba(255, 255, 255, 0.1) !important;
+          border-radius: 3px !important;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+          }
+        }
+      }
+
+      &.horizontal {
+        display: none !important;
+      }
+    }
+  }
 }
 
 .recording-overlay {
@@ -357,6 +369,7 @@ defineExpose({
 }
 
 @media (max-width: 768px) {
+
   .editor-wrapper.recording,
   .editor-wrapper.preview {
     max-width: 100%;
@@ -440,11 +453,13 @@ defineExpose({
   0% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
+
   100% {
     opacity: 1;
   }
 }
-</style> 
+</style>

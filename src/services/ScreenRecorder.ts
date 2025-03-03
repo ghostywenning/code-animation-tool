@@ -17,7 +17,7 @@ export class ScreenRecorder {
     try {
       this.canvas = document.createElement('canvas');
       const rect = element.getBoundingClientRect();
-      
+
       this.canvas.width = rect.width;
       this.canvas.height = rect.height;
       this.context = this.canvas.getContext('2d');
@@ -39,7 +39,7 @@ export class ScreenRecorder {
         mimeType: 'video/webm;codecs=vp9',
         videoBitsPerSecond: 5000000
       });
-      
+
       this.mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
           this.chunks.push(e.data);
@@ -63,11 +63,11 @@ export class ScreenRecorder {
             width: rect.width,
             height: rect.height
           });
-          
+
           if (this.context && this.canvas) {
             this.context.clearRect(0, 0, rect.width, rect.height);
             this.context.drawImage(snapshot, 0, 0);
-            
+
             if (this.mediaRecorder?.state === 'recording') {
               this.animationFrame = requestAnimationFrame(captureFrame);
             }
@@ -79,7 +79,7 @@ export class ScreenRecorder {
 
       // Запускаем анимацию
       this.animationFrame = requestAnimationFrame(captureFrame);
-      
+
       // Начинаем запись
       this.mediaRecorder.start(100);
     } catch (err) {
@@ -112,13 +112,13 @@ export class ScreenRecorder {
         const waitForLastChunk = () => {
           if (lastChunkReceived) {
             // Создаем blob с правильными настройками кодека
-            const blob = new Blob(this.chunks, { 
+            const blob = new Blob(this.chunks, {
               type: 'video/webm;codecs=vp9,opus'
             });
-            
+
             // Очищаем ресурсы
             this.cleanup();
-            
+
             // Даем браузеру время на финализацию
             setTimeout(() => {
               resolve(blob);
