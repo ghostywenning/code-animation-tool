@@ -54,6 +54,14 @@ onMounted(() => {
     glyphMargin: !props.hideLineNumbers,
     folding: false,
     stickyScroll: { enabled: false },
+    scrollbar: {
+      vertical: 'visible',
+      horizontal: 'hidden',
+      verticalScrollbarSize: 12,
+      useShadows: false,
+      verticalHasArrows: false,
+      horizontalHasArrows: false
+    },
     quickSuggestions: {
       other: true,
       comments: true,
@@ -353,6 +361,14 @@ defineExpose({
       &.horizontal {
         display: none !important;
       }
+
+      .decorationsOverviewRuler {
+        display: none !important;
+      }
+    }
+
+    .decorationsOverviewRuler {
+      display: none !important;
     }
   }
 }
